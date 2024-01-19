@@ -1,3 +1,4 @@
+#include "threadPool.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -15,6 +16,10 @@
 #define MAX_LISTEN  128
 #define LOCAL_IPADDRESS "127.0.0.1"
 #define BUFFER_SIZE 128
+
+#define MINTHREADS 5
+#define MAXTHREADS 10
+#define MAXQUEUESIZE 50
 
 // void sigHander(int sigNum)
 // {
@@ -81,6 +86,12 @@ void * threadHandle(void *arg)
 
 int main()
 {
+    /* 初始化线程池 */
+    pthread_t pool;
+
+    threadPoolInit(&pool, MINTHREADS, MAXTHREADS, MAXQUEUESIZE);
+    
+
     /* 信号注册 */
     // signal(SIGINT, sigHander);
     // signal(SIGQUIT, sigHander);
@@ -149,6 +160,7 @@ int main()
     while (1)
     {
         socklen_t clientAddressLen = 0;
+        /* 局部变量到下一次循环地方就会释放 */
         int acceptfd = accept(sockfd, (struct sockaddr *)&clientAddress, &clientAddressLen);
         if (acceptfd == -1)
         {
@@ -165,11 +177,15 @@ int main()
             perror("thread create error");
             exit(-1);
         }
-
-        
+#else
+        /* 将任务添加到队列 */
+        threadPoolAddTask(&pool, threadHandle, (void*)&acceptfd);
 #endif
     }
-
+    #if 1
+    /* 释放线程池 */
+    threadPoolDestroy(&pool);
+    #endif
     /* 关闭文件描述符 */
     close(sockfd);
 

@@ -11,7 +11,7 @@
 
 
 #define SERVER_PORT 8080
-#define SERVER_IP   " 172.18.188.222"
+#define SERVER_IP   "172.18.188.222"
 #define BUFFER_SIZE 128
 
 int main()
@@ -57,7 +57,7 @@ int main()
         strncpy(buffer, "123456", sizeof(buffer) - 1);
         write(sockfd, buffer, sizeof(buffer));
 
-        read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
+        read(sockfd, recvBuffer, sizeof(recvBuffer));//-1 "\0"
         printf("recv:%s\n", recvBuffer);
 #else
 

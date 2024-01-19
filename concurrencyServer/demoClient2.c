@@ -57,7 +57,7 @@ int main()
         strncpy(buffer, "778899", sizeof(buffer) - 1);
         write(sockfd, buffer, sizeof(buffer));
 
-        read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
+        read(sockfd, recvBuffer, sizeof(recvBuffer));
         printf("recv:%s\n", recvBuffer);
 #else
 
