@@ -11,10 +11,10 @@
 
 #define SERVER_PORT 8080
 #define MAX_LISTEN 128
-#define LCOAL_IPADDRESS "172.25.23.103"
+#define LCOAL_IPADDRESS "127.0.0.1"
 #define BUFFER_SIZE 128
 
-#if 1
+#if 0
 typedef struct sockaddr_in 
 {
     short int sin_family;          // 地址族，一般为 AF_INET
@@ -24,17 +24,17 @@ typedef struct sockaddr_in
 }localAddress;
 #endif
 
-void * sigHander(void *arg)
-{
+// void sigHander(void *arg)
+// {
 
-}
+// }
 
 int main()
 {
     /* 注册信号 */
-    signal(SIGINT, sigHander); //ctrl + c
-    signal(SIGQUIT, sigHander);//ctrl + /
-    signal(SIGSTOP, sigHander);//ctrl + z
+    // signal(SIGINT, sigHander); //ctrl + c
+    // signal(SIGQUIT, sigHander);//ctrl + /
+    // signal(SIGSTOP, sigHander);//ctrl + z
 
     /* 创建socket套接字 */
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -49,26 +49,26 @@ int main()
     /* 这个函数不好用 */
     struct socketaddr localAddress;
 #endif
-    struct sockaddr_in serverAddress;
+    struct sockaddr_in localAddress;
 
-    memset(&serverAddress, 0, sizeof(serverAddress));
+    memset(&localAddress, 0, sizeof(localAddress));
 
     /* 地址族 */
-    serverAddress.sin_family = AF_INET;
+    localAddress.sin_family = AF_INET;
     /* 端口需要转成大端 */
-    serverAddress.sin_port = htons(SERVER_PORT);
+    localAddress.sin_port = htons(SERVER_PORT);
     /* ip地址需要转成大端   sin_addr.s_addr这个宏一般用于本地的绑定操作*/
    
-#if 0
+#if 1
     /* accept any message */
     /* INADDR_ANY = 0x00000000 */
-    localAddress.sin_addr.s_addr = INADDR_ANY;//0.0.0.0 
+    localAddress.sin_addr.s_addr = htons(INADDR_ANY);//0.0.0.0 
    
 #else   
     inet_pton(AF_INET, LCOAL_IPADDRESS, &(serverAddress.sin_addr.s_addr));
 #endif
-    int serverAddressLen = sizeof(serverAddress);
-    int ret = bind(sockfd, (struct sockaddr_in *)&serverAddress, serverAddressLen);
+    int localAddressLen = sizeof(localAddress);
+    int ret = bind(sockfd, (struct sockaddr *)&localAddress, localAddressLen);
     if(ret == -1)
     {
         perror("bind error");
@@ -83,10 +83,12 @@ int main()
         exit(-1);
     }
 
+    /* 客户的信息 */
     struct sockaddr_in6 clientAddress;
     memset(&clientAddress, 0, sizeof(clientAddress));
+
     socklen_t clientAddressLen = 0;
-    int acceptfd = accept(sockfd, (struct sockaddr_in6 *)&clientAddress, &clientAddressLen);
+    int acceptfd = accept(sockfd, (struct sockaddr *)&clientAddress, &clientAddressLen);
     if(acceptfd == -1)
     {
         perror("accept error");
@@ -95,33 +97,35 @@ int main()
 
     char buffer[BUFFER_SIZE];
     memset(buffer, 0, sizeof(buffer));
+    
+    char replyBuffer[BUFFER_SIZE];
+    memset(replyBuffer, 0, sizeof(replyBuffer));
 
     int readBytes = 0;
     while(1)
     {
         readBytes = read(acceptfd, buffer, sizeof(buffer));
-        if(readBytes < 0)
+        if(readBytes <= 0)
         {
             perror("read error");
+            printf("111\n");
+            close(acceptfd);
             exit(-1);
-        }
-        else if(readBytes == 0)
-        {
-            /* todo...资源问题 */
-
         }
         else
         {
             /* 读到的字符数 */
             printf("buffer:%s\n", buffer);
 
-            sleep(1);
+            sleep(3);
 
+            strncpy(replyBuffer, "一起加油", sizeof(replyBuffer) - 1);
             write(acceptfd, "666", strlen("666") + 1);
 
         }
     }
-    close(sockfd);
+    // close(sockfd);
+    /* 关闭文件描述符 */
     close(acceptfd);
     
     return 0;
