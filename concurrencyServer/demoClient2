@@ -53,18 +53,19 @@ int main()
 
     while (1)
     {
-        #if 0
-        strncpy(buffer, "加油 254", sizeof(buffer) - 1);
-
+#if 1
+        strncpy(buffer, "778899", sizeof(buffer) - 1);
         write(sockfd, buffer, sizeof(buffer));
 
         read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
         printf("recv:%s\n", recvBuffer);
-        #else   
-        int num = 0x12345678;
-        printf("num:%d\n", num);
-        write(socket, (void*)&num, sizeof(int));
-        #endif
+#else
+
+        int num = 0X12345678;
+        write(sockfd, (void *)&num, sizeof(num));
+
+        sleep(5);
+#endif
     }
     
     

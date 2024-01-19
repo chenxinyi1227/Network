@@ -93,12 +93,10 @@ int main()
     char replyBuffer[BUFFER_SIZE];
     memset(replyBuffer, 0, sizeof(replyBuffer));
 
-
-    int recvNum = 0;
     int readBytes = 0;
     while (1)
     {
-        readBytes = read(acceptfd, (void *)&recvNum, sizeof(recvNum));
+        readBytes = read(acceptfd, buffer, sizeof(buffer));
         if (readBytes <= 0)
         {
             printf("111\n");
@@ -108,8 +106,6 @@ int main()
         }
         else
         {
-            printf("recvNum:%d\n", recvNum);
-            #if 0
             /* 读到的字符串 */
             printf("buffer:%s\n", buffer);
 
@@ -117,12 +113,13 @@ int main()
 
             strncpy(replyBuffer, "一起加油", sizeof(replyBuffer) - 1);
             write(acceptfd, replyBuffer, sizeof(replyBuffer));
-            #endif
         }    
     }
-
+    
     /* 关闭文件描述符 */
     close(sockfd);
+
+    
 
     return 0;
 }
