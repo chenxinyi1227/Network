@@ -8,23 +8,14 @@
 #include <netinet/in.h>
 #include <signal.h>
 #include <error.h>
-#include <json-c/json.h>
-#include <json-c/json_object.h>
 
 
 #define SERVER_PORT 8080
-#define SERVER_IP   "172.18.188.222"
+#define SERVER_IP   "172.25.23.103"
 #define BUFFER_SIZE 128
 
 int main()
 {
-    /* 新建json对象 */
-    struct json_object * object = json_object_new_object();
-    if(object == NULL)
-    {
-        /* stdo... */
-    }
-
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
     {
@@ -60,24 +51,21 @@ int main()
     char recvBuffer[BUFFER_SIZE];
     memset(recvBuffer, 0, sizeof(recvBuffer));
 
-    /* 1、注册 2、登录 */
-    /* {"way" : 1， “name":"zhangsan", "passord":"1213"} */
-
-    struct json_object * wayVal = json_object_new_int64(1);//登录方式
-    json_object_object_add(object, "way", wayVal);
-    /* 将json对象转成字符串 */
-    const char * ptr = json_object_to_json_string(object);
-
-    
     while (1)
     {
-        strncpy(buffer, "加油 254", sizeof(buffer) - 1);
-        //发送字符串
-       // sendto(sockfd, ptr, strlen(str), 0, (struct so));
-        // write(sockfd, buffer, sizeof(buffer));
+#if 1
+        strncpy(buffer, "123456", sizeof(buffer) - 1);
+        write(sockfd, buffer, sizeof(buffer));
 
-        read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
+        read(sockfd, recvBuffer, sizeof(recvBuffer));
         printf("recv:%s\n", recvBuffer);
+#else
+
+        int num = 0X12345678;
+        write(sockfd, (void *)&num, sizeof(num));
+
+        sleep(5);
+#endif
     }
     
     
@@ -87,6 +75,5 @@ int main()
     
     close(sockfd);
 
-    json_object_put(object);
     return 0;
 }

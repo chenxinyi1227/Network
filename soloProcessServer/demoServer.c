@@ -38,6 +38,15 @@ int main()
         exit(-1);
     }
 
+    /* 设置端口复用 */
+    int enableOpt = 1;
+    int ret = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void *)&enableOpt, sizeof(enableOpt));
+    if (ret == -1)
+    {
+        perror("setsockopt error");
+        exit(-1);
+    }
+
     /* 绑定 */
 #if 0
     /* 这个结构体不好用 */
@@ -60,7 +69,7 @@ int main()
 
     
     int localAddressLen = sizeof(localAddress);
-    int ret = bind(sockfd, (struct sockaddr *)&localAddress, localAddressLen);
+    ret = bind(sockfd, (struct sockaddr *)&localAddress, localAddressLen);
     if (ret == -1)
     {
         perror("bind error");
@@ -94,11 +103,10 @@ int main()
     memset(replyBuffer, 0, sizeof(replyBuffer));
 
 
-    int recvNum = 0;
     int readBytes = 0;
     while (1)
     {
-        readBytes = read(acceptfd, (void *)&recvNum, sizeof(recvNum));
+        readBytes = read(acceptfd, (void *)&buffer, sizeof(buffer));
         if (readBytes <= 0)
         {
             printf("111\n");
@@ -108,15 +116,21 @@ int main()
         }
         else
         {
-            printf("recvNum:%d\n", recvNum);
-            #if 0
+            #if 1
             /* 读到的字符串 */
             printf("buffer:%s\n", buffer);
-
-            sleep(3);
-
-            strncpy(replyBuffer, "一起加油", sizeof(replyBuffer) - 1);
-            write(acceptfd, replyBuffer, sizeof(replyBuffer));
+            if (strncmp(buffer, "123456", strlen("123456")) == 0)
+            {
+                strncpy(replyBuffer, "一起加油123456", sizeof(replyBuffer) - 1);
+                sleep(1);
+                write(acceptfd, replyBuffer, sizeof(replyBuffer));
+            }
+            else if (strncmp(buffer, "778899", strlen("778899")) == 0)
+            {
+                strncpy(replyBuffer, "一起加油778899", sizeof(replyBuffer) - 1);
+                sleep(1);
+                write(acceptfd, replyBuffer, sizeof(replyBuffer));
+            }
             #endif
         }    
     }
