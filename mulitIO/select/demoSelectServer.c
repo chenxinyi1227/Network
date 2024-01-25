@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <ctype.h>//toupper
+#include <string.h>
 
 #define SERVER_PORT 8080
 #define MAX_LISTRN 128
@@ -56,11 +57,11 @@ int main()
         exit(-1);
     }
 
-    fd_set readset;
+    fd_set readSet;
     //清空集合
-    FD_ZERO(&readset);
+    FD_ZERO(&readSet);
     /* 把监听的文件描述符添加到读集合中，然内核帮忙检测 */
-    FD_WET(sockfd, &readset);
+    FD_SET(sockfd, &readSet);
     //一定要放到循环里
     int maxfd = sockfd;
 
@@ -68,10 +69,15 @@ int main()
     /* 超时 */
     struct timeVal timeValue;
     #endif
+   
+    fd_set tmpReadSet;
+    bzero(&tmpReadSet, sizeof(tmpReadSet));
 
     while(1)
     {
-        int retSelect = select(maxfd + 1, &readset, NULL, NULL, NULL);
+        /* 备份读集合 */
+        tmpReadSet = readSet;
+        int retSelect = select(maxfd + 1, &readSet, NULL, NULL, NULL);
         if(retSelect == -1)
         {
             perror("select error");
@@ -79,7 +85,7 @@ int main()
         }
 
         /* 如果sockfd在readSet集合里面 */
-        if(FD_ISSET(sockfd, &readset))
+        if(FD_ISSET(sockfd, &readSet))
         {   
             // struct sockaddr * c_addr;
             // bzero((void*)&c_addr, sizeof(c_addr));
@@ -90,7 +96,7 @@ int main()
                 exit(-1);
             }
             //将通信的句柄 放到读集合中
-            FD_SET(acceptfd, &readset);
+            FD_SET(acceptfd, &readSet);
             //更新maxfd的值
             maxfd = maxfd < acceptfd ? acceptfd : maxfd;
             //maxfd = accept 
@@ -99,7 +105,7 @@ int main()
         /* 程序到这个地方：说明可能有通信 */
         for(int idx = 0; idx <= maxfd; idx++)
         {
-            if(idx != sockfd && FD_ISSET(idx, &readset))
+            if(idx != sockfd && FD_ISSET(idx, &readSet))
             {
                 char buffer[BUFFER_SIZE];
                 bzero(buffer, sizeof(buffer));
@@ -109,7 +115,7 @@ int main()
                 {
                     perror("read error");
                     //将该fd通信句柄从监听的读集合中删除
-                    FD_CLR(idx, &readset);
+                    FD_CLR(idx, &readSet);
                     //关闭文件句柄
                     close(idx);
                     //这边要做成continue...让下一个已read的fd句柄进行通信
@@ -119,7 +125,7 @@ int main()
                 {
                     printf("客户端断开连接\n");
                     //将该fd通信句柄从监听的读集合中删除
-                    FD_CLR(idx, &readset);
+                    FD_CLR(idx, &readSet);
                     //关闭通信句柄
                     close(idx);
                     continue;
@@ -127,9 +133,9 @@ int main()
                 else
                 {           
                     printf("buffer:%s\n", buffer);
-                    for(int jdx = 0; jdx < 0; jdx++)
+                    for(int jdx = 0; jdx < strlen(buffer); jdx++)
                     {
-                        buffer[jdx] = toupper(buffer[jdx]);
+                        buffer[jdx] = toupper(buffer[jdx]);//转换大小写
                     }
                     //发回客户端
                     write(idx, buffer, readBytes);
