@@ -87,7 +87,7 @@ void * threadHandle(void *arg)
 int main()
 {
     /* 初始化线程池 */
-    pthread_t pool;
+    threadPool_t pool;
 
     threadPoolInit(&pool, MINTHREADS, MAXTHREADS, MAXQUEUESIZE);
     
