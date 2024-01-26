@@ -11,7 +11,7 @@
 
 
 #define SERVER_PORT 8080
-#define SERVER_IP   "172.25.23.103"
+#define SERVER_IP   "172.18.188.222"
 #define BUFFER_SIZE 128
 
 int main()
