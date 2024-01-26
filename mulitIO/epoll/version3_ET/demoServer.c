@@ -15,7 +15,7 @@
 #include <errno.h>
 
 //水平触发 LT
-//边缘触发 RT
+//边缘触发 ET
 
 
 #define SERVER_PORT 8080
