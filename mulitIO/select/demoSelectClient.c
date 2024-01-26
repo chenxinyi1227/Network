@@ -54,19 +54,31 @@ int main()
     int readBytes = 0;
     while (1)
     {
+        printf("input:");
         scanf("%s", writebuffer);
-        /* 带上'\0'*/ 
+
+        /* 带上'字符串的结束符\0'*/ 
         write(sockfd, writebuffer, strlen(writebuffer) + 1);
 
         /* 接收数据 */
         readBytes = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
-        printf("recvBuffer:%s\n", recvBuffer);
+        if(readBytes < 0)
+        {
+            perror("read error");
+            exit(-1);
+        }
+        else if(readBytes == 0)
+        {
+            printf("readBytes == 0\n");
+        }
+        else
+        {
+            printf("recvBuffer:%s\n", recvBuffer);
+        }
     }
-    
     
     /* 休息5S */
     sleep(5);
-
     
     close(sockfd);
 

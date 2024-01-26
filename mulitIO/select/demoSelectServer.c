@@ -102,8 +102,8 @@ int main()
             //maxfd = accept 
         }
 
-        /* 程序到这个地方：说明可能有通信 */
-        for(int idx = 0; idx <= maxfd; idx++)
+        /* 程序到这个地方：说明可能有通信 忽略掉0、1、2 */
+        for(int idx = 3; idx <= maxfd; idx++)
         {
             if(idx != sockfd && FD_ISSET(idx, &readSet))
             {
