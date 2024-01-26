@@ -181,7 +181,7 @@ int main()
                     }
 
                     //发回客户端
-                    write(fd, buffer, sizeof(buffer));
+                    write(fd, buffer, readBytes);
                 }
             }
         }
