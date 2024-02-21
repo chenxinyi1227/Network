@@ -23,6 +23,14 @@ int main()
         exit(-1);
     }
 
+    //端口复用
+    int opt = 1;
+    int retopt = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
+    if(retopt == -1)
+    {
+        perror("setsockopt error");
+        exit(-1);
+    }
     
     struct sockaddr_in serverAddress;
     memset(&serverAddress, 0, sizeof(serverAddress));
