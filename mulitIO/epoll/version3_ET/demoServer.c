@@ -182,7 +182,7 @@ int main()
                             printf("read end...");
                             break;
                         }
-                        else
+                        else//则说明发生了其他错误
                         {
                             /* 将该文件句柄 从红黑树上 删除掉 */
                             epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
