@@ -7,7 +7,8 @@ s:${src}
 	gcc client1.c -o client1
 
 2:client1.c
-	gcc client2.c -o client1
+	gcc client2.c -o client2
 
+all: s 1 2
 clean:
 	@rm -rf server client1 client2
