@@ -57,8 +57,21 @@ int main()
         strncpy(buffer, "123456", sizeof(buffer) - 1);
         write(sockfd, buffer, sizeof(buffer));
 
-        read(sockfd, recvBuffer, sizeof(recvBuffer));//-1 "\0"
-        printf("recv:%s\n", recvBuffer);
+        int readBytes = read(sockfd, recvBuffer, sizeof(recvBuffer));//-1 "\0"
+        if(readBytes < 0)
+        {
+            perror("read error");
+            exit(-1);
+        }
+        else if(readBytes == 0)
+        {
+            printf("服务器关闭连接\n");
+            exit(-1);
+        }
+        else
+        {   
+            printf("recv:%s\n", recvBuffer);
+        }
 #else
 
         int num = 0X12345678;
