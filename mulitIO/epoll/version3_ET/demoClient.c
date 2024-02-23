@@ -10,43 +10,44 @@
 #include <error.h>
 #include <pthread.h>
 
+
 #define SERVER_PORT 8080
 #define SERVER_IP   "172.18.188.222"
 #define BUFFER_SIZE 128
 
-void *thread_func(void *arg)
+
+void * thread_read(void * arg)
 {
-    pthread_detach(pthread_self());//线程分离
+    /* 通信句柄 */
+    int sockfd = *(int *)arg;
 
-    int sockfd = *(int *)arg;//通信句柄
+    /* 线程分离 */
+    pthread_detach(pthread_self());
 
-    //读缓冲区
+    /* 读缓冲区 */
     char recvBuffer[BUFFER_SIZE];
+    memset(recvBuffer, 0, sizeof(recvBuffer));
 
-    while(1)
+    int readBytes = 0;
+    while (1)
     {
-        memset(recvBuffer, 0, sizeof(recvBuffer));
-        
         /* 接收数据 */
-        int readBytes = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
-        if(readBytes < 0)
+        readBytes = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
+        if (readBytes < 0)
         {
             perror("read error");
             exit(-1);
         }
-        else if(readBytes == 0)
+        else if (readBytes == 0)
         {
             printf("readBytes == 0\n");
-            exit(-1);
         }
         else
         {
-            printf("recvBuffer:%s\n", recvBuffer);
+            printf("recv:%s\n", recvBuffer);
         }
     }
-    return 0;
 }
-
 int main()
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -77,30 +78,28 @@ int main()
         perror("connect error");
         exit(-1);
     }
+
+    /* 写缓冲区 */
+    char writeBuffer[BUFFER_SIZE];
+    memset(writeBuffer, 0, sizeof(writeBuffer));
+
     
-    //写缓冲区
-    char writebuffer[BUFFER_SIZE];
-    memset(writebuffer, 0, sizeof(writebuffer));
 
     pthread_t tid;
-    ret = pthread_create(&tid, NULL, thread_func, (void*)&sockfd);
-    if(ret == -1)
-    {
-        perror("thread create error");
-        exit(-1);
-    }
-
+    pthread_create(&tid, NULL, thread_read, (void *)&sockfd);
+    int readBytes = 0;
     while (1)
     {
         printf("input:");
-        scanf("%s", writebuffer);//会阻塞
+        scanf("%s", writeBuffer);
 
-        /* 带上'字符串的结束符\0'*/ 
-        write(sockfd, writebuffer, strlen(writebuffer) + 1);
+        /* 带上字符串的结束符'\0' */
+        write(sockfd, writeBuffer, strlen(writeBuffer) + 1);
     }
-    
+
     /* 休息5S */
     sleep(5);
+
     
     close(sockfd);
 
