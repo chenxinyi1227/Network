@@ -142,7 +142,15 @@ int main()
     }
     printf("sockfd:%d\n", sockfd);
 
-    
+    /* 设置端口复用 */
+    int enableOpt = 1;
+    int ret = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void *)&enableOpt, sizeof(enableOpt));
+    if (ret == -1)
+    {
+        perror("setsockopt error");
+        exit(-1);
+    }
+
     /* 将本地的IP和端口绑定 */
     struct sockaddr_in localAddress;
     bzero((void *)&localAddress, sizeof(localAddress));
@@ -151,7 +159,7 @@ int main()
     localAddress.sin_addr.s_addr = htonl(INADDR_ANY);
     
     socklen_t localAddressLen = sizeof(localAddress);
-    int ret = bind(sockfd, (struct sockaddr *)&localAddress, localAddressLen);
+    ret = bind(sockfd, (struct sockaddr *)&localAddress, localAddressLen);
     if (ret == -1)
     {
         perror("bind error");
