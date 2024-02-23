@@ -8,11 +8,44 @@
 #include <netinet/in.h>
 #include <signal.h>
 #include <error.h>
-
+#include <pthread.h>
 
 #define SERVER_PORT 8080
 #define SERVER_IP   "172.18.188.222"
 #define BUFFER_SIZE 128
+
+void *thread_func(void *arg)
+{
+    pthread_detach(pthread_self());//线程分离
+
+    int sockfd = *(int *)arg;//通信句柄
+
+    //读缓冲区
+    char recvBuffer[BUFFER_SIZE];
+
+    while(1)
+    {
+        memset(recvBuffer, 0, sizeof(recvBuffer));
+        
+        /* 接收数据 */
+        int readBytes = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
+        if(readBytes < 0)
+        {
+            perror("read error");
+            exit(-1);
+        }
+        else if(readBytes == 0)
+        {
+            printf("readBytes == 0\n");
+            exit(-1);
+        }
+        else
+        {
+            printf("recvBuffer:%s\n", recvBuffer);
+        }
+    }
+    return 0;
+}
 
 int main()
 {
@@ -23,14 +56,6 @@ int main()
         exit(-1);
     }
 
-    //端口复用
-    int opt = 1;
-    int retopt = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
-    if(retopt == -1)
-    {
-        perror("setsockopt error");
-        exit(-1);
-    }
     
     struct sockaddr_in serverAddress;
     memset(&serverAddress, 0, sizeof(serverAddress));
@@ -52,37 +77,26 @@ int main()
         perror("connect error");
         exit(-1);
     }
-
+    
+    //写缓冲区
     char writebuffer[BUFFER_SIZE];
     memset(writebuffer, 0, sizeof(writebuffer));
 
-    char recvBuffer[BUFFER_SIZE];
-    memset(recvBuffer, 0, sizeof(recvBuffer));
+    pthread_t tid;
+    ret = pthread_create(&tid, NULL, thread_func, (void*)&sockfd);
+    if(ret == -1)
+    {
+        perror("thread create error");
+        exit(-1);
+    }
 
-    int readBytes = 0;
     while (1)
     {
         printf("input:");
-        scanf("%s", writebuffer);
+        scanf("%s", writebuffer);//会阻塞
 
         /* 带上'字符串的结束符\0'*/ 
         write(sockfd, writebuffer, strlen(writebuffer) + 1);
-
-        /* 接收数据 */
-        readBytes = read(sockfd, recvBuffer, sizeof(recvBuffer) - 1);
-        if(readBytes < 0)
-        {
-            perror("read error");
-            exit(-1);
-        }
-        else if(readBytes == 0)
-        {
-            printf("readBytes == 0\n");
-        }
-        else
-        {
-            printf("recvBuffer:%s\n", recvBuffer);
-        }
     }
     
     /* 休息5S */
